@@ -1,0 +1,26 @@
+# Python extras
+.venv/
+__pycache__/
+ui_*.py
+
+# KiCad extras
+*.000
+*.bak
+*.bck
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*-backups
+*.kicad_prl
+*.sch-bak
+*~
+_autosave-*
+*.tmp
+*-save.pro
+*-save.kicad_pcb
+fp-info-cache
+*.net
+*.dsn
+*.ses
+*.xml
+*.csv
+out/
