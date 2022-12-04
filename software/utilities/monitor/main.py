@@ -21,7 +21,8 @@ class MainWindow(QMainWindow):
     
     def closeEvent(self, event):
         super().closeEvent(event)
-        self._disconnect()
+        self.timer.stop()
+        self.haptick.disconnect()
 
     def _connect(self):
         self.haptick.connect(self.ui.serialPortCombo.currentText())
@@ -32,8 +33,8 @@ class MainWindow(QMainWindow):
         self.ui.serialConnectButton.clicked.connect(self._disconnect)
     
     def _disconnect(self):
-        self.haptick.disconnect()
         self.timer.stop()
+        self.haptick.disconnect()
         self.ui.serialPortCombo.setDisabled(False)
         self.ui.serialConnectButton.setText("Connect")
         self.ui.serialConnectButton.clicked.disconnect(self._disconnect)
