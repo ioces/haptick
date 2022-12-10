@@ -41,7 +41,8 @@ class MainWindow(QMainWindow):
         self.ui.serialConnectButton.clicked.connect(self._connect)
     
     def _update_plot(self):
-        if vals := self.haptick.get_vals():
+        vals = self.haptick.get_vals()
+        if vals is not None:
             self.ui.plot.add_values(vals)
 
 
