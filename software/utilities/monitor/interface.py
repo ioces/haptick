@@ -10,7 +10,7 @@ class SerialProcess:
 
     def __init__(self, port):
         self.port = port
-        self._filter_coeff = ss.butter(4, 10.0, output='sos', fs=1/256e-6)
+        self._filter_coeff = None
         self._filter_state = None
         self._bias = None
     
@@ -23,11 +23,17 @@ class SerialProcess:
                     message = conn.recv()
                     if message["command"] == "close":
                         return
+                    elif message["command"] == "set_filter":
+                        value = message["value"]
+                        if value is None:
+                            self._filter_coeff = None
+                        else:
+                            self._filter_state = None
+                            self._filter_coeff = ss.butter(4, value, output='sos', fs=1/256e-6)
                 data = s.read(24)
-                parsed = self.__parse(data)
-                if parsed:
+                if parsed := self.__parse(data):
                     samples.append(parsed)
-                    if len(samples) == 16:
+                    if len(samples) == 32:
                         result = self.__filter(samples)
                         conn.send(result)
                         samples = []
@@ -44,15 +50,22 @@ class SerialProcess:
             return [int.from_bytes(b, byteorder="big", signed=True) * self.GAIN for b in zip(*args)]
     
     def __filter(self, samples):
-        if self._filter_state is None:
-            self._filter_state = np.dstack([ss.sosfilt_zi(self._filter_coeff) * x for x in samples[0]])
-        result, self._filter_state = ss.sosfilt(self._filter_coeff, samples, axis=0, zi=self._filter_state)
+        if self._filter_coeff is not None:
+            if self._filter_state is None:
+                self._filter_state = np.dstack([ss.sosfilt_zi(self._filter_coeff) * x for x in samples[0]])
+            result, self._filter_state = ss.sosfilt(self._filter_coeff, samples, axis=0, zi=self._filter_state)
+        else:
+            result = np.vstack(samples)
         if self._bias is None:
             self._bias = result[-1, :]
-        return result[-1, :] - self._bias
+        return result - self._bias
 
 
 class Haptick:
+    def __init__(self):
+        self._proc = None
+        self.__filter_cutoff = None
+        
     def list_ports(self):
         return [port.device for port in serial.tools.list_ports.comports()]
 
@@ -61,19 +74,35 @@ class Haptick:
         proc = SerialProcess(port)
         self._proc = Process(target=proc, args=(conn, ))
         self._proc.start()
+        self._send_command("set_filter", value=self.__filter_cutoff)
     
     def disconnect(self):
-        try:
-            self._conn.send({"command": "close"})
-        except (EOFError, BrokenPipeError):
-            pass
-        self._proc.join()
+        self._send_command("close")
+        if self._proc:
+            self._proc.join()
     
     def get_vals(self):
         vals = []
         while self._conn.poll():
             vals.append(self._conn.recv())
-        return vals
+        return np.vstack(vals) if vals else None
+    
+    @property
+    def filter_cutoff(self):
+        return self.__filter_cutoff
+    
+    @filter_cutoff.setter
+    def filter_cutoff(self, value):
+        self.__filter_cutoff = value
+        self._send_command("set_filter", value=self.__filter_cutoff)
+    
+    def _send_command(self, command, **kwargs):
+        try:
+            message = kwargs
+            message.update({"command": command})
+            self._conn.send(message)
+        except (EOFError, BrokenPipeError, AttributeError):
+            pass
 
 
 if __name__ == "__main__":

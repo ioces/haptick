@@ -46,22 +46,76 @@
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Filter Cutoff:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="filterCutoffSlider">
+        <property name="value">
+         <number>99</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="filterCutoffValue">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Disabled</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
-     <widget class="ChannelVoltage" name="plot" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="tabPosition">
+       <enum>QTabWidget::South</enum>
       </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="ChannelVoltage" name="voltagePlot">
+       <attribute name="title">
+        <string>Voltage</string>
+       </attribute>
+      </widget>
+      <widget class="ChannelPsd" name="psdPlot">
+       <attribute name="title">
+        <string>Power Spectrum</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="positionPlot">
+       <attribute name="title">
+        <string>Position</string>
+       </attribute>
+      </widget>
      </widget>
     </item>
    </layout>
   </widget>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>ChannelPsd</class>
+   <extends>QWidget</extends>
+   <header>visualisers.h</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>ChannelVoltage</class>
    <extends>QWidget</extends>
