@@ -44,3 +44,30 @@ class ChannelVoltage(MplCanvas):
             line.set_xdata(self.x_data)
         self.axes.set_xlim(self.x_data[0], self.x_data[-1])
         self.draw()
+
+
+class ChannelPsd(MplCanvas):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Add some axes
+        self.axes = self.figure.add_subplot(111)
+
+        # Plot something
+        self.data = np.random.rand(4096, 6)
+        for d in self.data.T:
+            self.axes.psd(d, Fs=1/256e-6)
+    
+    def add_values(self, values):
+        value_count = len(values)
+        self.data = np.roll(self.data, -value_count, axis=0)
+        self.data[-value_count:, :] = values
+        self.axes.clear()
+        self.axes.set_ylim(-300.0, -100.0)
+        for d in self.data.T:
+            self.axes.psd(d, Fs=1/256e-6)
+        self.draw()
+    
+    @property
+    def channel_std(self):
+        return np.std(self.data, axis=0)
