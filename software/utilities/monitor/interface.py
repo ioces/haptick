@@ -24,10 +24,9 @@ class SerialProcess:
                     if message["command"] == "close":
                         return
                 data = s.read(24)
-                parsed = self.__parse(data)
-                if parsed:
+                if parsed := self.__parse(data):
                     samples.append(parsed)
-                    if len(samples) == 16:
+                    if len(samples) == 32:
                         result = self.__filter(samples)
                         conn.send(result)
                         samples = []
@@ -49,7 +48,7 @@ class SerialProcess:
         result, self._filter_state = ss.sosfilt(self._filter_coeff, samples, axis=0, zi=self._filter_state)
         if self._bias is None:
             self._bias = result[-1, :]
-        return result[-1, :] - self._bias
+        return result - self._bias
 
 
 class Haptick:
@@ -73,7 +72,7 @@ class Haptick:
         vals = []
         while self._conn.poll():
             vals.append(self._conn.recv())
-        return vals
+        return np.vstack(vals) if vals else None
 
 
 if __name__ == "__main__":
