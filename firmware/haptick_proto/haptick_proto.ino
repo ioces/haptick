@@ -7,16 +7,18 @@ const int spi_ncs_pin = 10;
 // SPI settings
 const SPISettings spi_settings(8000000, MSBFIRST, SPI_MODE1);
 
+bool buffer_empty = true;
 char adc_buffer[24];
 
 void adc_data_ready() {
-  memset(adc_buffer, 0, 24);
-  SPI.beginTransaction(spi_settings);
-  digitalWrite(spi_ncs_pin, LOW);
-  SPI.transfer(adc_buffer, 24);
-  digitalWrite(spi_ncs_pin, HIGH);
-  SPI.endTransaction();
-  Serial.write(adc_buffer, 24);
+  if (buffer_empty) {
+    SPI.beginTransaction(spi_settings);
+    digitalWrite(spi_ncs_pin, LOW);
+    SPI.transfer(adc_buffer, 24);
+    digitalWrite(spi_ncs_pin, HIGH);
+    SPI.endTransaction();
+    buffer_empty = false;
+  }
 }
 
 void setup()   {
@@ -69,5 +71,9 @@ void loop()
   channel_1 = channel_1 >> 8;
   Serial.println(channel_1);
   delay(50);*/
-  delay(500);
+  if (!buffer_empty) {
+    Serial.write(adc_buffer, 24);
+    memset(adc_buffer, 0, 24);
+    buffer_empty = true;
+  }
 }
