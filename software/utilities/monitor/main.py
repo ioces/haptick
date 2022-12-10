@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer(self)
         self.timer.setInterval(20)
-        self.timer.timeout.connect(self._update_plot)
+        self.timer.timeout.connect(self._update)
     
     def closeEvent(self, event):
         super().closeEvent(event)
@@ -40,10 +40,11 @@ class MainWindow(QMainWindow):
         self.ui.serialConnectButton.clicked.disconnect(self._disconnect)
         self.ui.serialConnectButton.clicked.connect(self._connect)
     
-    def _update_plot(self):
+    def _update(self):
         vals = self.haptick.get_vals()
         if vals is not None:
-            self.ui.plot.add_values(vals)
+            self.ui.voltagePlot.add_values(vals)
+            self.ui.psdPlot.add_values(vals)
 
 
 if __name__ == "__main__":

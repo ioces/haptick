@@ -39,11 +39,12 @@ class ChannelVoltage(MplCanvas):
         self.y_data[-value_count:, :] = values
         prev_x = self.x_data[-value_count-1]
         self.x_data[-value_count:] = np.linspace(prev_x + 256e-6, prev_x + 256e-6 + (value_count - 1) * 256e-6, value_count)
-        for line, d in zip(self.lines, self.y_data.T):
-            line.set_ydata(d)
-            line.set_xdata(self.x_data)
-        self.axes.set_xlim(self.x_data[0], self.x_data[-1])
-        self.draw()
+        if self.isVisible():
+            for line, d in zip(self.lines, self.y_data.T):
+                line.set_ydata(d)
+                line.set_xdata(self.x_data)
+            self.axes.set_xlim(self.x_data[0], self.x_data[-1])
+            self.draw()
 
 
 class ChannelPsd(MplCanvas):
@@ -63,11 +64,12 @@ class ChannelPsd(MplCanvas):
         value_count = len(values)
         self.data = np.roll(self.data, -value_count, axis=0)
         self.data[-value_count:, :] = values
-        self.axes.clear()
-        self.axes.set_ylim(-300.0, -100.0)
-        for d in self.data.T:
-            self.axes.psd(d, Fs=1/256e-6)
-        self.draw()
+        if self.isVisible():
+            self.axes.clear()
+            self.axes.set_ylim(-300.0, -100.0)
+            for d in self.data.T:
+                self.axes.psd(d, Fs=1/256e-6)
+            self.draw()
     
     @property
     def channel_std(self):
