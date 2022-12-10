@@ -10,6 +10,7 @@ class SerialProcess:
 
     def __init__(self, port):
         self.port = port
+        self._filter_enabled = False
         self._filter_coeff = ss.butter(4, 10.0, output='sos', fs=1/256e-6)
         self._filter_state = None
         self._bias = None
@@ -43,9 +44,12 @@ class SerialProcess:
             return [int.from_bytes(b, byteorder="big", signed=True) * self.GAIN for b in zip(*args)]
     
     def __filter(self, samples):
-        if self._filter_state is None:
-            self._filter_state = np.dstack([ss.sosfilt_zi(self._filter_coeff) * x for x in samples[0]])
-        result, self._filter_state = ss.sosfilt(self._filter_coeff, samples, axis=0, zi=self._filter_state)
+        if self._filter_enabled:
+            if self._filter_state is None:
+                self._filter_state = np.dstack([ss.sosfilt_zi(self._filter_coeff) * x for x in samples[0]])
+            result, self._filter_state = ss.sosfilt(self._filter_coeff, samples, axis=0, zi=self._filter_state)
+        else:
+            result = np.vstack(samples)
         if self._bias is None:
             self._bias = result[-1, :]
         return result - self._bias
