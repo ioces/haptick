@@ -54,7 +54,8 @@ class ChannelPsd(MplCanvas):
         self.axes = self.figure.add_subplot(111)
 
         # Plot something
-        self.data = np.random.rand(4096, 6)
+        self.axes.set_ylim(-300.0, -100.0)
+        self.data = np.random.rand(4096, 6) * 1.2e-6
         for d in self.data.T:
             self.axes.psd(d, Fs=1/256e-6)
     
