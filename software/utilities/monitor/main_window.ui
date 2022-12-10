@@ -54,7 +54,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QSlider" name="horizontalSlider">
+       <widget class="QSlider" name="filterCutoffSlider">
         <property name="value">
          <number>99</number>
         </property>
@@ -64,7 +64,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="filterCutoffValue">
         <property name="minimumSize">
          <size>
           <width>80</width>

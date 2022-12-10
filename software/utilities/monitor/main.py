@@ -15,6 +15,8 @@ class MainWindow(QMainWindow):
         self.ui.serialPortCombo.addItems(self.haptick.list_ports())
         self.ui.serialConnectButton.clicked.connect(self._connect)
 
+        self.ui.filterCutoffSlider.valueChanged.connect(self._change_filter_cutoff)
+
         self.timer = QTimer(self)
         self.timer.setInterval(20)
         self.timer.timeout.connect(self._update)
@@ -45,6 +47,15 @@ class MainWindow(QMainWindow):
         if vals is not None:
             self.ui.voltagePlot.add_values(vals)
             self.ui.psdPlot.add_values(vals)
+    
+    def _change_filter_cutoff(self, value):
+        if value == 99:
+            self.haptick.filter_cutoff = None
+            self.ui.filterCutoffValue.setText("Disabled")
+        else:
+            frequency = 10 ** (value * 4.29 / 98 - 1)
+            self.haptick.filter_cutoff = frequency
+            self.ui.filterCutoffValue.setText(f"{frequency:.1f} Hz")
 
 
 if __name__ == "__main__":
