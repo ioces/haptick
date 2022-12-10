@@ -65,9 +65,9 @@ class Haptick:
     def disconnect(self):
         try:
             self._conn.send({"command": "close"})
+            self._proc.join()
         except (EOFError, BrokenPipeError, AttributeError):
             pass
-        self._proc.join()
     
     def get_vals(self):
         vals = []
