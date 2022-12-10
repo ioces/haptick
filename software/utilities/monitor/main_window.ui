@@ -91,13 +91,36 @@
       </property>
       <widget class="ChannelVoltage" name="voltagePlot">
        <attribute name="title">
-        <string>Voltage</string>
+        <string>Time Series</string>
        </attribute>
       </widget>
-      <widget class="ChannelPsd" name="psdPlot">
+      <widget class="QWidget" name="psdTab">
        <attribute name="title">
         <string>Power Spectrum</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="NoiseWidget" name="noiseWidget" native="true"/>
+        </item>
+        <item>
+         <widget class="ChannelPsd" name="psdPlot" native="true"/>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="positionPlot">
        <attribute name="title">
@@ -118,6 +141,12 @@
   </customwidget>
   <customwidget>
    <class>ChannelVoltage</class>
+   <extends>QWidget</extends>
+   <header>visualisers.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NoiseWidget</class>
    <extends>QWidget</extends>
    <header>visualisers.h</header>
    <container>1</container>

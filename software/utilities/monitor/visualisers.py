@@ -1,6 +1,9 @@
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
 import numpy as np
+from PySide6.QtWidgets import QWidget
+from ui_noisewidget import Ui_NoiseWidget
+from si_prefix import si_format
 
 
 class MplCanvas(FigureCanvas):
@@ -56,7 +59,7 @@ class ChannelPsd(MplCanvas):
 
         # Plot something
         self.axes.set_ylim(-300.0, -100.0)
-        self.data = np.random.rand(4096, 6) * 1.2e-6
+        self.data = np.random.rand(1024, 6) * 1.2e-6
         for d in self.data.T:
             self.axes.psd(d, Fs=1/256e-6)
     
@@ -70,7 +73,29 @@ class ChannelPsd(MplCanvas):
             for d in self.data.T:
                 self.axes.psd(d, Fs=1/256e-6)
             self.draw()
+
+
+class NoiseWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_NoiseWidget()
+        self.ui.setupUi(self)
+        self._channel_labels = [
+            self.ui.channel_1,
+            self.ui.channel_2,
+            self.ui.channel_3,
+            self.ui.channel_4,
+            self.ui.channel_5,
+            self.ui.channel_6
+        ]
+
+        self.data = np.zeros((4096, 6))
     
-    @property
-    def channel_std(self):
-        return np.std(self.data, axis=0)
+    def add_values(self, values):
+        value_count = len(values)
+        self.data = np.roll(self.data, -value_count, axis=0)
+        self.data[-value_count:, :] = values
+        if self.isVisible():
+            rms = np.std(self.data, axis=0)
+            for label, value in zip(self._channel_labels, rms):
+                label.setText(f"{si_format(value, precision=2)}V")
