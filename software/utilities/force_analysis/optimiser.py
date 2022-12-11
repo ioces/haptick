@@ -23,8 +23,8 @@ class EvennessError:
             knobby = Haptick(p[0], p[1] * p[0], p[2], p[3] * p[2], self.height)
 
             # Find the upward reaction force for applied forces and torques
-            z_for_forces = knobby.truss_forces(self.forces, self._null)[2, ...]
-            z_for_torques = knobby.truss_forces(self._null, self.torques)[2, ...]
+            z_for_forces = knobby.truss_force_components(self.forces, self._null)[2, ...]
+            z_for_torques = knobby.truss_force_components(self._null, self.torques)[2, ...]
 
             # Calculate the RMS of the reaction forces for each applied force
             # and torque
