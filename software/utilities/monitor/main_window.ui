@@ -122,7 +122,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="positionPlot">
+      <widget class="ForceTorqueDisplay" name="forceTorqueDisplay">
        <attribute name="title">
         <string>Position</string>
        </attribute>
@@ -147,6 +147,12 @@
   </customwidget>
   <customwidget>
    <class>NoiseWidget</class>
+   <extends>QWidget</extends>
+   <header>visualisers.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ForceTorqueDisplay</class>
    <extends>QWidget</extends>
    <header>visualisers.h</header>
    <container>1</container>

@@ -2,8 +2,18 @@ from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
 import numpy as np
 from PySide6.QtWidgets import QWidget
+from PySide6.QtOpenGLWidgets import QOpenGLWidget
+from PySide6.QtGui import QSurfaceFormat
+import moderngl
 from ui_noisewidget import Ui_NoiseWidget
 from si_prefix import si_format
+
+# Hackish way of importing my free body code without releasing a package
+import sys
+import pathlib
+parent = pathlib.Path(__file__).parent.resolve()
+sys.path.append(str(parent / "../force_analysis/"))
+import free_body
 
 
 class MplCanvas(FigureCanvas):
@@ -99,3 +109,60 @@ class NoiseWidget(QWidget):
             rms = np.std(self.data, axis=0)
             for label, value in zip(self._channel_labels, rms):
                 label.setText(f"{si_format(value, precision=2)}V")
+
+
+class ForceTorqueDisplay(QOpenGLWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        separation = 2 * np.pi * 25e-3 * 25.0 / 360.0
+        self._haptick = free_body.Haptick(25e-3, separation, 25e-3, separation, 20e-3)
+        
+        format = QSurfaceFormat()
+        format.setVersion(3, 3)
+        format.setProfile(QSurfaceFormat.CoreProfile)
+        format.setSamples(8)
+        self.setFormat(format)
+
+        self.ctx = None
+
+    def add_values(self, values):
+        force, torque = self._haptick.applied(values[-1, ...])
+        print(force)
+        print(torque)
+    
+    def paintGL(self):
+        if self.ctx is None:
+            self.init()
+        self.render()
+    
+    def init(self):
+        self.ctx = moderngl.create_context()
+        self.prog = self.ctx.program(
+            vertex_shader='''
+                #version 330
+                in vec2 in_vert;
+                void main() {
+                    gl_Position = vec4(in_vert, 0.0, 1.0);
+                }
+            ''',
+            fragment_shader='''
+                #version 330
+                out vec4 f_color;
+                void main() {
+                    f_color = vec4(0.3, 0.5, 1.0, 1.0);
+                }
+            ''',
+        )
+
+        vertices = np.array([
+            0.0, 0.8,
+            -0.6, -0.8,
+            0.6, -0.8,
+        ], dtype='f4')
+
+        self.vbo = self.ctx.buffer(vertices)
+        self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'in_vert')
+
+    def render(self):
+        self.ctx.clear(1.0, 1.0, 1.0)
+        self.vao.render()
