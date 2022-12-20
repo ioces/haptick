@@ -123,7 +123,7 @@ class ForceTorqueDisplay(QOpenGLWidget):
         format = QSurfaceFormat()
         format.setVersion(3, 3)
         format.setProfile(QSurfaceFormat.CoreProfile)
-        format.setSamples(8)
+        format.setSamples(16)
         self.setFormat(format)
 
         self.ctx = None
@@ -151,14 +151,14 @@ class ForceTorqueDisplay(QOpenGLWidget):
                 uniform mat4 Mvp;
                 in vec3 in_position;
                 in vec3 in_normal;
-                in vec2 in_texcoord_0;
+                in vec2 in_texcoord;
                 out vec3 v_vert;
                 out vec3 v_norm;
                 out vec2 v_text;
                 void main() {
                     v_vert = in_position;
                     v_norm = in_normal;
-                    v_text = in_texcoord_0;
+                    v_text = in_texcoord;
                     gl_Position = Mvp * vec4(in_position, 1.0);
                 }
             ''',
@@ -190,23 +190,28 @@ class ForceTorqueDisplay(QOpenGLWidget):
         self.color = self.prog['Color']
         self.mvp = self.prog['Mvp']
 
-        # Create a vao from the first root node (attribs are auto mapped)
-        self.vao = self.obj.root_nodes[0].mesh.vao.instance(self.prog)
+        self.vbo = self.ctx.buffer(np.array(self.scene.meshes['Cube'].materials[0].vertices, dtype=np.float32))
+        self.vao = self.ctx.vertex_array(
+            self.prog,
+            [
+                (self.vbo, '2f 3f 3f', 'in_texcoord', 'in_normal', 'in_position')
+            ],
+        )
 
     def render(self):
         self.ctx.clear(1.0, 1.0, 1.0)
         self.ctx.enable(moderngl.DEPTH_TEST)
 
-        proj = Matrix44.perspective_projection(45.0, self.aspect_ratio, 0.1, 1000.0)
+        proj = Matrix44.perspective_projection(45.0, self.width() / self.height(), 0.1, 1000.0)
         lookat = Matrix44.look_at(
-            (-85, -180, 140),
-            (0.0, 0.0, 65.0),
+            (5.0, 5.0, 5.0),
+            (0.0, 0.0, 0.0),
             (0.0, 0.0, 1.0),
         )
 
-        self.light.value = (-140.0, -300.0, 350.0)
-        self.color.value = (1.0, 1.0, 1.0, 0.25)
+        self.light.value = (-20.0, 10.0, 5.0)
+        self.color.value = (1.0, 1.0, 1.0, 0.5)
         self.mvp.write((proj * lookat).astype('f4'))
 
-        self.texture.use()
+        #self.texture.use()
         self.vao.render()
