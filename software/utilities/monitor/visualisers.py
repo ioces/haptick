@@ -7,6 +7,7 @@ from PySide6.QtGui import QSurfaceFormat
 import moderngl
 from pywavefront import Wavefront
 from pyrr import Matrix44
+from PIL import Image
 from ui_noisewidget import Ui_NoiseWidget
 from si_prefix import si_format
 from pathlib import Path
@@ -140,9 +141,6 @@ class ForceTorqueDisplay(QOpenGLWidget):
             self.init()
         self.render()
     
-    def resizeGL(self, width, height):
-        pass
-    
     def init(self):
         self.ctx = moderngl.create_context()
         self.prog = self.ctx.program(
@@ -190,13 +188,16 @@ class ForceTorqueDisplay(QOpenGLWidget):
         self.color = self.prog['Color']
         self.mvp = self.prog['Mvp']
 
-        self.vbo = self.ctx.buffer(np.array(self.scene.meshes['Cube'].materials[0].vertices, dtype=np.float32))
+        self.vbo = self.ctx.buffer(np.array(self.scene.materials['Material'].vertices, dtype=np.float32))
         self.vao = self.ctx.vertex_array(
             self.prog,
             [
                 (self.vbo, '2f 3f 3f', 'in_texcoord', 'in_normal', 'in_position')
             ],
         )
+        with Image.open('assets/' + self.scene.materials['Material'].texture.image_name) as im:
+            im = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+            self.texture = self.ctx.texture(im.size, 4, im.tobytes())
 
     def render(self):
         self.ctx.clear(1.0, 1.0, 1.0)
@@ -204,14 +205,14 @@ class ForceTorqueDisplay(QOpenGLWidget):
 
         proj = Matrix44.perspective_projection(45.0, self.width() / self.height(), 0.1, 1000.0)
         lookat = Matrix44.look_at(
-            (5.0, 5.0, 5.0),
+            (4.0, 4.0, 4.0),
             (0.0, 0.0, 0.0),
             (0.0, 0.0, 1.0),
         )
 
-        self.light.value = (-20.0, 10.0, 5.0)
-        self.color.value = (1.0, 1.0, 1.0, 0.5)
+        self.light.value = (5.0, 0.0, 10.0)
+        self.color.value = (1.0, 1.0, 1.0, 0.25)
         self.mvp.write((proj * lookat).astype('f4'))
 
-        #self.texture.use()
+        self.texture.use()
         self.vao.render()

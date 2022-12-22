@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 135.46666 135.46666"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="texture.svg"
+   inkscape:export-filename="texture.png"
+   inkscape:export-xdpi="384"
+   inkscape:export-ydpi="384"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="1"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="true"
+     showguides="true"
+     inkscape:zoom="1.6819304"
+     inkscape:cx="295.19652"
+     inkscape:cy="311.54678"
+     inkscape:window-width="2560"
+     inkscape:window-height="1531"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid184"
+       spacingx="16.933332"
+       spacingy="16.933332" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:19.05px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="39.596584"
+       y="-61.246719"
+       id="text240"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan238"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.05px;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';stroke-width:0.264583"
+         x="39.596584"
+         y="-61.246719">+X</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:19.05px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="38.76915"
+       y="-95.01638"
+       id="text240-6"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan238-1"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.05px;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';stroke-width:0.264583"
+         x="38.76915"
+         y="-95.01638">+Z</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:19.05px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="38.117176"
+       y="-27.407173"
+       id="text240-0"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan238-61"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.05px;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';stroke-width:0.264583"
+         x="38.117176"
+         y="-27.407173">−Z</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:19.05px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="106.18964"
+       y="-60.797611"
+       id="text240-3"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan238-6"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.05px;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';stroke-width:0.264583"
+         x="106.18964"
+         y="-60.797611">−X</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:19.05px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="72.893593"
+       y="-61.279068"
+       id="text240-3-1"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan238-6-7"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.05px;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';stroke-width:0.264583"
+         x="72.893593"
+         y="-61.279068">+Y</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:19.05px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="4.6379471"
+       y="-61.352798"
+       id="text240-3-1-2"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan238-6-7-7"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.05px;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';stroke-width:0.264583"
+         x="4.6379471"
+         y="-61.352798">−Y</tspan></text>
+  </g>
+</svg>
