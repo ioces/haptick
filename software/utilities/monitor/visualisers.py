@@ -210,7 +210,7 @@ class ForceTorqueDisplay(QOpenGLWidget):
             (0.0, 0.0, 1.0),
         )
 
-        self.light.value = (5.0, 0.0, 10.0)
+        self.light.value = (4.0, 1.0, 6.0)
         self.color.value = (1.0, 1.0, 1.0, 0.25)
         self.mvp.write((proj * lookat).astype('f4'))
 
