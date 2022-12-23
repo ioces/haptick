@@ -6,7 +6,7 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtGui import QSurfaceFormat
 import moderngl
 from pywavefront import Wavefront
-from pyrr import Matrix44
+from pyrr import Matrix33, Matrix44, matrix44
 from PIL import Image
 from ui_noisewidget import Ui_NoiseWidget
 from si_prefix import si_format
@@ -131,10 +131,15 @@ class ForceTorqueDisplay(QOpenGLWidget):
 
         self.scene = Wavefront(Path(__file__).parent / 'assets' / 'cube.obj')
 
+        self._translation = np.zeros(3)
+        self._rotation = np.zeros(3)
+
     def add_values(self, values):
-        force, torque = self._haptick.applied(values[-1, ...])
-        print(force)
-        print(torque)
+        force, torque = self._haptick.applied(np.roll(-values[-1, ...], 1))
+        haptick_to_world = Matrix33.from_z_rotation(-np.pi / 2)
+        self._translation += haptick_to_world @ (force[:, 0] / 1e-4)
+        self._rotation = haptick_to_world @ (torque[:, 0] / 0.2e-5)
+        self.update()
     
     def paintGL(self):
         if self.ctx is None:
@@ -195,6 +200,7 @@ class ForceTorqueDisplay(QOpenGLWidget):
                 (self.vbo, '2f 3f 3f', 'in_texcoord', 'in_normal', 'in_position')
             ],
         )
+
         with Image.open('assets/' + self.scene.materials['Material'].texture.image_name) as im:
             im = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
             self.texture = self.ctx.texture(im.size, 4, im.tobytes())
@@ -209,10 +215,16 @@ class ForceTorqueDisplay(QOpenGLWidget):
             (0.0, 0.0, 0.0),
             (0.0, 0.0, 1.0),
         )
+        translate = matrix44.create_from_translation(self._translation)
+        theta = np.linalg.norm(self._rotation)
+        if theta > 0.0:
+            rotate = matrix44.create_from_axis_rotation(self._rotation, theta)
+        else:
+            rotate = matrix44.create_from_axis_rotation([0.0, 0.0, 1.0], 0.0)
 
-        self.light.value = (4.0, 1.0, 6.0)
+        self.light.write((translate @ rotate @ np.array([[4.0], [1.0], [6.0], [1.0]]))[:3].astype('f4'))
         self.color.value = (1.0, 1.0, 1.0, 0.25)
-        self.mvp.write((proj * lookat).astype('f4'))
+        self.mvp.write((proj * lookat * translate * rotate).astype('f4'))
 
         self.texture.use()
         self.vao.render()
