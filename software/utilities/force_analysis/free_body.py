@@ -12,9 +12,16 @@ class Haptick:
 
         self._init_trusses()
     
-    def truss_forces(self, applied_force, applied_torque):
-        magnitudes = self._inverse_plucker @ -np.atleast_2d(np.hstack((applied_force, applied_torque))).T
+    def truss_force_components(self, applied_force, applied_torque):
+        magnitudes = self.truss_force_magnitudes(applied_force, applied_torque)
         return self._unit_forces[..., np.newaxis] * magnitudes[np.newaxis, ...]
+    
+    def truss_force_magnitudes(self, applied_force, applied_torque):
+        return self._inverse_plucker @ -np.atleast_2d(np.hstack((applied_force, applied_torque))).T
+    
+    def applied(self, truss_force_magnitudes):
+        forces_torques = -(self._plucker @ np.atleast_2d(truss_force_magnitudes).T)
+        return forces_torques[:3, ...], forces_torques[3:, ...]
     
     def _init_trusses(self):
         # Create truss vectors
@@ -28,11 +35,12 @@ class Haptick:
         bottom_joints = self._joint_positions(bottom_angles, self.bottom_radius, 0.0)
         self.trusses = np.dstack((top_joints, np.roll(bottom_joints, -1, axis=1)))
 
-        # Calculate unit truss forces and inverse of the Plucker coordinates
+        # Calculate unit truss forces and Plucker coordinates
         self._unit_forces = self.trusses[..., 0] - self.trusses[..., 1]
         self._unit_forces /= np.linalg.norm(self._unit_forces, axis=0)
         moments = np.cross(self.trusses[..., 0], self._unit_forces, axis=0)
-        self._inverse_plucker = np.linalg.inv(np.vstack((self._unit_forces, moments)))
+        self._plucker = np.vstack((self._unit_forces, moments))
+        self._inverse_plucker = np.linalg.inv(self._plucker)
 
     @staticmethod
     def _joint_positions(angles, radius, z):
@@ -46,7 +54,10 @@ if __name__ == "__main__":
     haptick = Haptick(30e-3, 6e-3, 15e-3, 6e-3, 20e-3)
     applied_forces = np.array([[0.0, 0.0, -20e-3*9.81], [0.0, 0.0, 20e-3*9.81]])
     applied_torques = np.zeros((2, 3))
-    print(haptick.truss_forces(applied_forces, applied_torques))
+    print(haptick.truss_force_components(applied_forces, applied_torques))
+    truss_force_magnitudes = haptick.truss_force_magnitudes(applied_forces, applied_torques)
+    print(haptick.applied(truss_force_magnitudes.T)[0])
+    print(haptick.applied(truss_force_magnitudes.T)[1])
     trusses = haptick.trusses
     ax = plt.axes(projection='3d')
     ax.scatter3D(*trusses[..., 0])

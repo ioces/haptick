@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
             self.ui.voltagePlot.add_values(vals)
             self.ui.psdPlot.add_values(vals)
             self.ui.noiseWidget.add_values(vals)
+            self.ui.forceTorqueDisplay.add_values(vals)
     
     def _change_filter_cutoff(self, value):
         if value == 99:

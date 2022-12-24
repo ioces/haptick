@@ -40,11 +40,11 @@ torques = np.vstack((forces_varying_x, forces_varying_y, forces_varying_z)) * 8e
 torques += torques / np.linalg.norm(torques, axis=1)[:,np.newaxis] * 0.5e-3
 
 # Calculate forces on trusses for applied forces.
-truss_forces_for_forces = haptick.truss_forces(forces, np.zeros_like(forces))[2]
+truss_forces_for_forces = haptick.truss_force_components(forces, np.zeros_like(forces))[2]
 max_truss_force_for_forces = np.abs(truss_forces_for_forces).max()
 
 # Calculate forces on trusses for applied torques.
-truss_forces_for_torques = haptick.truss_forces(np.zeros_like(torques), torques)[2]
+truss_forces_for_torques = haptick.truss_force_components(np.zeros_like(torques), torques)[2]
 max_truss_force_for_torques = np.abs(truss_forces_for_torques).max()
 
 fig = plt.figure()
