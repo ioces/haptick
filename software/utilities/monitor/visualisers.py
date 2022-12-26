@@ -140,7 +140,7 @@ class ForceTorqueDisplay(QOpenGLWidget):
         haptick_to_world = Rotation.from_rotvec([0.0, 0.0, np.pi / 2])
         world_to_eye = Rotation.from_euler('ZX', [3.0 * np.pi / 4.0, -np.pi / 4.0])
         self._translation += (world_to_eye * haptick_to_world).apply(force[:, 0] / 1e-4)
-        self._rotation = self._rotation * Rotation.from_rotvec((world_to_eye * haptick_to_world).apply(torque[:, 0] / -2e-5))
+        self._rotation = self._rotation * Rotation.from_rotvec((world_to_eye * haptick_to_world).apply(torque[:, 0] / -1e-5))
         self.update()
     
     def paintGL(self):
