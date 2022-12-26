@@ -62,6 +62,9 @@ void setup()
   digitalWrite(spi_ncs_pin, HIGH);
   SPI.endTransaction();
 
+  // Wait for serial to come up
+  while (!Serial);
+
   // Set up an interrupt on the ADC_!DRDY pin
   attachInterrupt(digitalPinToInterrupt(adc_ndrdy_pin), adc_data_ready, FALLING);
 }
