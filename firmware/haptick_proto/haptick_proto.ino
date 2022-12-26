@@ -10,8 +10,11 @@ const SPISettings spi_settings(8000000, MSBFIRST, SPI_MODE1);
 bool buffer_empty = true;
 char adc_buffer[24];
 
-void adc_data_ready() {
-  if (buffer_empty) {
+void adc_data_ready() 
+{
+  // If we've sent the last set of results, grab new ones into the buffer
+  if (buffer_empty)
+  {
     SPI.beginTransaction(spi_settings);
     digitalWrite(spi_ncs_pin, LOW);
     SPI.transfer(adc_buffer, 24);
@@ -21,7 +24,8 @@ void adc_data_ready() {
   }
 }
 
-void setup()   {
+void setup()
+{
   // Create an 8 MHz 50% duty cycle clock for the ADC
   // This requires overclocking the Teensy to 96 MHz to
   // get a 48 MHz PWM clock, which is then divided by 6
@@ -64,14 +68,9 @@ void setup()   {
 
 void loop()                     
 {
-  /*int32_t channel_1 = 0;
-  channel_1 |= adc_buffer[6] << 24;
-  channel_1 |= adc_buffer[7] << 16;
-  channel_1 |= adc_buffer[8] << 8;
-  channel_1 = channel_1 >> 8;
-  Serial.println(channel_1);
-  delay(50);*/
-  if (!buffer_empty) {
+  // Dump values out the serial port every time new readings come in
+  if (!buffer_empty)
+  {
     Serial.write(adc_buffer, 24);
     memset(adc_buffer, 0, 24);
     buffer_empty = true;
