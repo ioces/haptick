@@ -13,6 +13,8 @@ class SerialProcess:
         self._filter_coeff = None
         self._filter_state = None
         self._bias = None
+        self._counter = 0
+        self._cache = np.zeros((15625, 6))
     
     def __call__(self, conn):
         with serial.Serial(self.port, timeout=0.1) as s:
@@ -56,9 +58,19 @@ class SerialProcess:
             result, self._filter_state = ss.sosfilt(self._filter_coeff, samples, axis=0, zi=self._filter_state)
         else:
             result = np.vstack(samples)
+        
+        self._cache = np.roll(self._cache, result.shape[0], axis=0)
+        self._cache[:result.shape[0], ...] = result
+
+        self._counter += result.shape[0]
+
+        if self._counter > self._cache.shape[0] and np.all(self._cache.std(axis=0) < 0.5e-6):
+            self._bias = self._cache.mean(axis=0)
+
         if self._bias is None:
-            self._bias = result[-1, :]
-        return result - self._bias
+            return np.full_like(result, np.nan)
+        else:
+            return result - self._bias
 
 
 class Haptick:
