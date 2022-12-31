@@ -113,7 +113,10 @@ class NoiseWidget(QWidget):
         if self.isVisible():
             rms = np.std(self.data, axis=0)
             for label, value in zip(self._channel_labels, rms):
-                label.setText(f"{si_format(value, precision=2)}V")
+                if np.isnan(value):
+                    label.setText("")
+                else:
+                    label.setText(f"{si_format(value, precision=2)}V")
 
 
 class CubeDisplay(QOpenGLWidget):
@@ -231,6 +234,14 @@ class CubeControl(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Generate and connect up the UI
+        self.ui = Ui_CubeControl()
+        self.ui.setupUi(self)
+        self.ui.resetButton.clicked.connect(self._reset_position_rotation)
+        self.ui.thresholdSlider.valueChanged.connect(self._change_threshold)
+        self.ui.translationSlider.valueChanged.connect(self._change_translation_sensitivity)
+        self.ui.rotationSlider.valueChanged.connect(self._change_rotation_sensitivity)
+
         # Create a free body Haptick to be able to calculate forces and torques
         separation = 2 * np.pi * 25e-3 * 25.0 / 360.0
         self._haptick = free_body.Haptick(25e-3, separation, 25e-3, separation, 20e-3)
@@ -249,14 +260,6 @@ class CubeControl(QWidget):
         self._threshold = 1.0e-6
         self._translation_sensitivity = 1.2e6
         self._rotation_sensitivity = 1.2e5
-
-        # Generate and connect up the UI
-        self.ui = Ui_CubeControl()
-        self.ui.setupUi(self)
-        self.ui.resetButton.clicked.connect(self._reset_position_rotation)
-        self.ui.thresholdSlider.valueChanged.connect(self._change_threshold)
-        self.ui.translationSlider.valueChanged.connect(self._change_translation_sensitivity)
-        self.ui.rotationSlider.valueChanged.connect(self._change_rotation_sensitivity)
     
     def add_values(self, values):
         # Get the most recent arm forces. Base arm index 0 and 1 should be
@@ -266,6 +269,9 @@ class CubeControl(QWidget):
 
         # Bail if the values we get aren't large enough.
         if np.all(np.abs(arm_forces) < self._threshold):
+            return
+        
+        if np.any(np.isnan(arm_forces)):
             return
 
         # Use the free body model to calculate the force and torque applied to
@@ -299,6 +305,7 @@ class CubeControl(QWidget):
     def _reset_position_rotation(self):
         self._translation = np.zeros(3)
         self._rotation = Rotation.from_rotvec([0.0, 0.0, 0.0])
+        self.ui.cubeDisplay.update_cube(self._translation, self._rotation)
     
     def _change_threshold(self, value):
         self._threshold = value * 1.0e-7
