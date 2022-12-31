@@ -259,7 +259,7 @@ class CubeControl(QWidget):
         # Default thresholds and sensitivities
         self._threshold = 1.0e-6
         self._translation_sensitivity = 1.2e6
-        self._rotation_sensitivity = 1.2e5
+        self._rotation_sensitivity = 1.2e7
     
     def add_values(self, values):
         # Get the most recent arm forces. Base arm index 0 and 1 should be
@@ -311,7 +311,7 @@ class CubeControl(QWidget):
         self._threshold = value * 1.0e-7
     
     def _change_rotation_sensitivity(self, value):
-        pass
+        self._rotation_sensitivity = value * 1.2e6
 
     def _change_translation_sensitivity(self, value):
-        pass
+        self._translation_sensitivity = value * 1.2e5
