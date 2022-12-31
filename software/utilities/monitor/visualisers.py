@@ -116,11 +116,9 @@ class NoiseWidget(QWidget):
                 label.setText(f"{si_format(value, precision=2)}V")
 
 
-class ForceTorqueDisplay(QOpenGLWidget):
+class CubeDisplay(QOpenGLWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        separation = 2 * np.pi * 25e-3 * 25.0 / 360.0
-        self._haptick = free_body.Haptick(25e-3, separation, 25e-3, separation, 20e-3)
         
         format = QSurfaceFormat()
         format.setVersion(3, 3)
@@ -134,14 +132,6 @@ class ForceTorqueDisplay(QOpenGLWidget):
 
         self._translation = np.zeros(3)
         self._rotation = Rotation.from_rotvec([0.0, 0.0, 0.0])
-
-    def add_values(self, values):
-        force, torque = self._haptick.applied(np.roll(-values[-1, ...], 1))
-        haptick_to_world = Rotation.from_rotvec([0.0, 0.0, np.pi / 2])
-        world_to_eye = Rotation.from_euler('ZX', [3.0 * np.pi / 4.0, -np.pi / 4.0])
-        self._translation += (world_to_eye * haptick_to_world).apply(force[:, 0] / 1e-4)
-        self._rotation = self._rotation * Rotation.from_rotvec((world_to_eye * haptick_to_world).apply(torque[:, 0] / -2e-5))
-        self.update()
     
     def paintGL(self):
         if self.ctx is None:
@@ -227,3 +217,25 @@ class ForceTorqueDisplay(QOpenGLWidget):
 
         self.texture.use()
         self.vao.render()
+
+
+from ui_cubecontrol import Ui_CubeControl
+
+
+class CubeControl(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.ui = Ui_CubeControl()
+        self.ui.setupUi(self)
+
+        separation = 2 * np.pi * 25e-3 * 25.0 / 360.0
+        self._haptick = free_body.Haptick(25e-3, separation, 25e-3, separation, 20e-3)
+    
+    def add_values(self, values):
+        force, torque = self._haptick.applied(np.roll(-values[-1, ...], 1))
+        haptick_to_world = Rotation.from_rotvec([0.0, 0.0, np.pi / 2])
+        world_to_eye = Rotation.from_euler('ZX', [3.0 * np.pi / 4.0, -np.pi / 4.0])
+        self._translation += (world_to_eye * haptick_to_world).apply(force[:, 0] / 1e-4)
+        self._rotation = self._rotation * Rotation.from_rotvec((world_to_eye * haptick_to_world).apply(torque[:, 0] / -2e-5))
+        #self.update()

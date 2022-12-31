@@ -118,11 +118,18 @@
          <widget class="NoiseWidget" name="noiseWidget" native="true"/>
         </item>
         <item>
-         <widget class="ChannelPsd" name="psdPlot" native="true"/>
+         <widget class="ChannelPsd" name="psdPlot" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
-      <widget class="ForceTorqueDisplay" name="forceTorqueDisplay">
+      <widget class="CubeControl" name="cubeControl">
        <attribute name="title">
         <string>Position</string>
        </attribute>
@@ -152,7 +159,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ForceTorqueDisplay</class>
+   <class>CubeControl</class>
    <extends>QWidget</extends>
    <header>visualisers.h</header>
    <container>1</container>
