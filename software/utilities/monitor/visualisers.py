@@ -133,6 +133,8 @@ class CubeDisplay(QOpenGLWidget):
 
         self.scene = Wavefront(Path(__file__).parent / 'assets' / 'cube.obj')
 
+        self.desk_to_eye = Rotation.from_euler('ZX', [3.0 * np.pi / 4.0, -np.pi / 4.0])
+
         self._translation = np.zeros(3)
         self._rotation = Rotation.from_rotvec([0.0, 0.0, 0.0])
     
@@ -217,7 +219,7 @@ class CubeDisplay(QOpenGLWidget):
         )
 
         translate = Matrix44.from_translation(self._translation)
-        rotate = Matrix44.from_quaternion(self._rotation.as_quat())
+        rotate = Matrix44.from_quaternion(self._rotation.inv().as_quat())
 
         self.light.write(((translate * rotate) @ np.array([[4.0], [1.0], [6.0], [1.0]]))[:3].astype('f4'))
         self.color.value = (1.0, 1.0, 1.0, 0.25)
@@ -290,8 +292,8 @@ class CubeControl(QWidget):
             force[:, 0] * self._translation_sensitivity)
         rotational_velocity = self._haptick_to_desk.apply(
             torque[:, 0] * self._rotation_sensitivity)
-        self._translation += linear_velocity * time
-        self._rotation = self._rotation * Rotation.from_rotvec(rotational_velocity * time)
+        self._translation += self.ui.cubeDisplay.desk_to_eye.apply(linear_velocity * time)
+        self._rotation = Rotation.from_rotvec(self.ui.cubeDisplay.desk_to_eye.apply(rotational_velocity * time)) * self._rotation
 
         # Update the display
         self.ui.cubeDisplay.update_cube(self._translation, self._rotation)
