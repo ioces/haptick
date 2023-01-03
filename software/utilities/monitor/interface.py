@@ -3,18 +3,28 @@ import serial.tools.list_ports
 from multiprocessing import Process, Pipe
 import numpy as np
 import scipy.signal as ss
+from dataclasses import dataclass
+
+
+@dataclass
+class BiasCorrectionSettings:
+    enabled: bool = True
+    threshold: float = 0.5e-6
+    time: float = 1.0
 
 
 class SerialProcess:
     GAIN = (2.4 / 64) / 2.0 ** 24
 
-    def __init__(self, port):
+    def __init__(self, port, filter_cutoff, bias_correction):
         self.port = port
-        self._filter_coeff = None
-        self._filter_state = None
+        
         self._bias = None
         self._counter = 0
         self._cache = np.zeros((15625, 6))
+
+        self.filter_cutoff = filter_cutoff
+        self.bias_correction = bias_correction
     
     def __call__(self, conn):
         with serial.Serial(self.port, timeout=0.1) as s:
@@ -25,13 +35,8 @@ class SerialProcess:
                     message = conn.recv()
                     if message["command"] == "close":
                         return
-                    elif message["command"] == "set_filter":
-                        value = message["value"]
-                        if value is None:
-                            self._filter_coeff = None
-                        else:
-                            self._filter_state = None
-                            self._filter_coeff = ss.butter(4, value, output='sos', fs=1/256e-6)
+                    elif message["command"] == "set_filter_cutoff":
+                        self.filter_cutoff = message["value"]
                 data = s.read(24)
                 if parsed := self.__parse(data):
                     samples.append(parsed)
@@ -71,22 +76,35 @@ class SerialProcess:
             return np.full_like(result, np.nan)
         else:
             return result - self._bias
+    
+    @property
+    def filter_cutoff(self):
+        return self.__filter_cutoff
+
+    @filter_cutoff.setter
+    def filter_cutoff(self, value):
+        if value is None:
+            self._filter_coeff = None
+        else:
+            self._filter_state = None
+            self._filter_coeff = ss.butter(4, value, output='sos', fs=1/256e-6)
+        self.__filter_cutoff = value
 
 
 class Haptick:
     def __init__(self):
         self._proc = None
         self.__filter_cutoff = None
+        self.__bias_correction = BiasCorrectionSettings()
         
     def list_ports(self):
         return [port.device for port in serial.tools.list_ports.comports()]
 
     def connect(self, port):
         self._conn, conn = Pipe()
-        proc = SerialProcess(port)
+        proc = SerialProcess(port, self.__filter_cutoff, self.__bias_correction)
         self._proc = Process(target=proc, args=(conn, ))
         self._proc.start()
-        self._send_command("set_filter", value=self.__filter_cutoff)
     
     def disconnect(self):
         self._send_command("close")
@@ -99,6 +117,10 @@ class Haptick:
             vals.append(self._conn.recv())
         return np.vstack(vals) if vals else None
     
+    def set_bias_correction(self, enabled, threshold, time):
+        self.__bias_correction = BiasCorrectionSettings(enabled, threshold, time)
+        self._send_command("set_bias_correction", value=self.__bias_correction)
+    
     @property
     def filter_cutoff(self):
         return self.__filter_cutoff
@@ -106,7 +128,7 @@ class Haptick:
     @filter_cutoff.setter
     def filter_cutoff(self, value):
         self.__filter_cutoff = value
-        self._send_command("set_filter", value=self.__filter_cutoff)
+        self._send_command("set_filter_cutoff", value=self.__filter_cutoff)
     
     def _send_command(self, command, **kwargs):
         try:
