@@ -71,11 +71,12 @@ class SerialProcess:
 
         if self._counter > self._cache.shape[0]:
             if self._bias is None:
-                index = int(np.round(3.0 / 4.0 * self._cache.shape[0]))
+                index = int(np.round(3.0 / 256.0e-6))
                 self._bias = self._cache[:index, ...].mean(axis=0)
             elif self.bias_correction.enabled:
-                index = int(np.round(self.bias_correction.time / 4.0 * self._cache.shape[0]))
-                if np.all(self._cache[:index, ...].std(axis=0) < self.bias_correction.threshold):
+                index = int(np.round(self.bias_correction.time / 256.0e-6))
+                standard_deviations = self._cache[:index, ...].std(axis=0)
+                if np.all(standard_deviations < self.bias_correction.threshold):
                     self._bias = self._cache[:index, ...].mean(axis=0)
 
         if self._bias is None:
