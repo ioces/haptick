@@ -69,8 +69,14 @@ class SerialProcess:
 
         self._counter += result.shape[0]
 
-        if self._counter > self._cache.shape[0] and np.all(self._cache.std(axis=0) < 0.5e-6):
-            self._bias = self._cache.mean(axis=0)
+        if self._counter > self._cache.shape[0]:
+            if self._bias is None:
+                index = int(np.round(3.0 / 4.0 * self._cache.shape[0]))
+                self._bias = self._cache[:index, ...].mean(axis=0)
+            elif self.bias_correction.enabled:
+                index = int(np.round(self.bias_correction.time / 4.0 * self._cache.shape[0]))
+                if np.all(self._cache[:index, ...].std(axis=0) < self.bias_correction.threshold):
+                    self._bias = self._cache[:index, ...].mean(axis=0)
 
         if self._bias is None:
             return np.full_like(result, np.nan)
