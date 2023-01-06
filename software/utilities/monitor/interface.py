@@ -6,7 +6,7 @@ import scipy.signal as ss
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class BiasCorrectionSettings:
     enabled: bool = True
     threshold: float = 0.5e-6
@@ -124,8 +124,13 @@ class Haptick:
             vals.append(self._conn.recv())
         return np.vstack(vals) if vals else None
     
-    def set_bias_correction(self, enabled, threshold, time):
-        self.__bias_correction = BiasCorrectionSettings(enabled, threshold, time)
+    @property
+    def bias_correction(self):
+        return self.__bias_correction
+    
+    @bias_correction.setter
+    def bias_correction(self, value):
+        self.__bias_correction = value
         self._send_command("set_bias_correction", value=self.__bias_correction)
     
     @property

@@ -89,7 +89,7 @@
        </widget>
       </item>
       <item row="0" column="2" rowspan="2">
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="biasGroupBox">
         <property name="title">
          <string>Bias Correction</string>
         </property>
@@ -105,7 +105,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QSlider" name="horizontalSlider">
+          <widget class="QSlider" name="biasThresholdSlider">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -119,7 +119,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QSlider" name="horizontalSlider_2">
+          <widget class="QSlider" name="biasTimeSlider">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
