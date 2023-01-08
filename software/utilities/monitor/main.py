@@ -66,7 +66,12 @@ class MainWindow(QMainWindow):
             self.ui.filterCutoffValue.setText(f"{frequency:.1f} Hz")
     
     def _change_bias_correction(self, *_):
-        pass
+        time = self.ui.biasTimeSlider.value() / 99.0 * 3.0 + 1.0
+        threshold = self.ui.biasThresholdSlider.value() / 99.0 * 2.0e-6
+        enabled = self.ui.biasGroupBox.isChecked()
+
+        settings = interface.BiasCorrectionSettings(enabled, threshold, time)
+        self.haptick.bias_correction = settings
 
 
 if __name__ == "__main__":

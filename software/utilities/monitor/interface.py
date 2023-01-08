@@ -37,6 +37,8 @@ class SerialProcess:
                         return
                     elif message["command"] == "set_filter_cutoff":
                         self.filter_cutoff = message["value"]
+                    elif message["command"] == "set_bias_correction":
+                        self.bias_correction = message["value"]
                 data = s.read(24)
                 if parsed := self.__parse(data):
                     samples.append(parsed)
