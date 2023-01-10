@@ -113,14 +113,15 @@ class NoiseWidget(QWidget):
         if self.isVisible():
             rms = np.std(self.data, axis=0)
             for label, value in zip(self._channel_labels, rms):
-                label.setText(f"{si_format(value, precision=2)}V")
+                if np.isnan(value):
+                    label.setText("")
+                else:
+                    label.setText(f"{si_format(value, precision=2)}V")
 
 
-class ForceTorqueDisplay(QOpenGLWidget):
+class CubeDisplay(QOpenGLWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        separation = 2 * np.pi * 25e-3 * 25.0 / 360.0
-        self._haptick = free_body.Haptick(25e-3, separation, 25e-3, separation, 20e-3)
         
         format = QSurfaceFormat()
         format.setVersion(3, 3)
@@ -132,15 +133,14 @@ class ForceTorqueDisplay(QOpenGLWidget):
 
         self.scene = Wavefront(Path(__file__).parent / 'assets' / 'cube.obj')
 
+        self.desk_to_eye = Rotation.from_euler('ZX', [3.0 * np.pi / 4.0, -np.pi / 4.0])
+
         self._translation = np.zeros(3)
         self._rotation = Rotation.from_rotvec([0.0, 0.0, 0.0])
-
-    def add_values(self, values):
-        force, torque = self._haptick.applied(np.roll(-values[-1, ...], 1))
-        haptick_to_world = Rotation.from_rotvec([0.0, 0.0, np.pi / 2])
-        world_to_eye = Rotation.from_euler('ZX', [3.0 * np.pi / 4.0, -np.pi / 4.0])
-        self._translation += (world_to_eye * haptick_to_world).apply(force[:, 0] / 1e-4)
-        self._rotation = self._rotation * Rotation.from_rotvec((world_to_eye * haptick_to_world).apply(torque[:, 0] / -2e-5))
+    
+    def update_cube(self, translation, rotation):
+        self._translation = translation
+        self._rotation = rotation
         self.update()
     
     def paintGL(self):
@@ -208,7 +208,7 @@ class ForceTorqueDisplay(QOpenGLWidget):
             self.texture = self.ctx.texture(im.size, 4, im.tobytes())
 
     def render(self):
-        self.ctx.clear(1.0, 1.0, 1.0)
+        self.ctx.clear(1.0, 1.0, 1.0, 1.0)
         self.ctx.enable(moderngl.DEPTH_TEST)
 
         proj = Matrix44.perspective_projection(45.0, self.width() / self.height(), 0.1, 1000.0)
@@ -219,7 +219,7 @@ class ForceTorqueDisplay(QOpenGLWidget):
         )
 
         translate = Matrix44.from_translation(self._translation)
-        rotate = Matrix44.from_quaternion(self._rotation.as_quat())
+        rotate = Matrix44.from_quaternion(self._rotation.inv().as_quat())
 
         self.light.write(((translate * rotate) @ np.array([[4.0], [1.0], [6.0], [1.0]]))[:3].astype('f4'))
         self.color.value = (1.0, 1.0, 1.0, 0.25)
@@ -227,3 +227,93 @@ class ForceTorqueDisplay(QOpenGLWidget):
 
         self.texture.use()
         self.vao.render()
+
+
+from ui_cubecontrol import Ui_CubeControl
+
+
+class CubeControl(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Generate and connect up the UI
+        self.ui = Ui_CubeControl()
+        self.ui.setupUi(self)
+        self.ui.resetButton.clicked.connect(self._reset_position_rotation)
+        self.ui.thresholdSlider.valueChanged.connect(self._change_threshold)
+        self.ui.translationSlider.valueChanged.connect(self._change_translation_sensitivity)
+        self.ui.rotationSlider.valueChanged.connect(self._change_rotation_sensitivity)
+
+        # Create a free body Haptick to be able to calculate forces and torques
+        separation = 2 * np.pi * 25e-3 * 25.0 / 360.0
+        self._haptick = free_body.Haptick(25e-3, separation, 25e-3, separation, 20e-3)
+
+        # Create a rotation that takes vectors from Haptick space to real desk
+        # space. Haptick space has the positive x-axis going into the screen and
+        # the positive y-axis going directly left. Desk space has the positive
+        # x-axis going directly right, and the positive y-axis going directly
+        # into the screen. Both are right-handed coordinate systems.
+        self._haptick_to_desk = Rotation.from_rotvec([0.0, 0.0, np.pi / 2])
+
+        # Start at no translation or rotation
+        self._reset_position_rotation()
+
+        # Default thresholds and sensitivities
+        self._threshold = 1.0e-6
+        self._translation_sensitivity = 1.2e6
+        self._rotation_sensitivity = 1.2e7
+    
+    def add_values(self, values):
+        # Get the most recent arm forces. Base arm index 0 and 1 should be
+        # immediately either side of the positive x-axis, and indices should
+        # increase with increasing geometric angle.
+        arm_forces = np.roll(-values[-1, ...], 1)
+
+        # Bail if the values we get aren't large enough.
+        if np.all(np.abs(arm_forces) < self._threshold):
+            return
+        
+        if np.any(np.isnan(arm_forces)):
+            return
+
+        # Use the free body model to calculate the force and torque applied to
+        # the platform.
+        force, torque = self._haptick.applied(arm_forces)
+
+        # We know Haptick uses a constant sampling rate, so the elapsed time
+        # since the last batch of samples is the sampling period times the
+        # number of samples.
+        time = values.shape[0] * 256e-6
+
+        # Calculate the translation and rotation from the applied forces and
+        # torques. We make linear velocity directly proportional to the force
+        # and rotational velocity directly proportional to the torque.
+        linear_velocity = self._haptick_to_desk.apply(
+            force[:, 0] * self._translation_sensitivity)
+        rotational_velocity = self._haptick_to_desk.apply(
+            torque[:, 0] * self._rotation_sensitivity)
+        self._translation += self.ui.cubeDisplay.desk_to_eye.apply(linear_velocity * time)
+        self._rotation = Rotation.from_rotvec(self.ui.cubeDisplay.desk_to_eye.apply(rotational_velocity * time)) * self._rotation
+
+        # Update the display
+        self.ui.cubeDisplay.update_cube(self._translation, self._rotation)
+        
+        #haptick_to_world = self._haptick_to_desk
+        #world_to_eye = Rotation.from_euler('ZX', [3.0 * np.pi / 4.0, -np.pi / 4.0])
+        #self._translation += (world_to_eye * haptick_to_world).apply(force[:, 0] / 1e-4)
+        #self._rotation = self._rotation * Rotation.from_rotvec((world_to_eye * haptick_to_world).apply(torque[:, 0] / -1e-5))
+        #self.update()
+    
+    def _reset_position_rotation(self):
+        self._translation = np.zeros(3)
+        self._rotation = Rotation.from_rotvec([0.0, 0.0, 0.0])
+        self.ui.cubeDisplay.update_cube(self._translation, self._rotation)
+    
+    def _change_threshold(self, value):
+        self._threshold = value * 1.0e-7
+    
+    def _change_rotation_sensitivity(self, value):
+        self._rotation_sensitivity = value * 1.2e6
+
+    def _change_translation_sensitivity(self, value):
+        self._translation_sensitivity = value * 1.2e5

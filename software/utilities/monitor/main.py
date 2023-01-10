@@ -2,7 +2,7 @@ import sys
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMainWindow
 from ui_mainwindow import Ui_MainWindow
-from interface import Haptick
+import interface
 
 
 class MainWindow(QMainWindow):
@@ -10,12 +10,18 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.haptick = Haptick()
+        self.haptick = interface.Haptick()
     
         self.ui.serialPortCombo.addItems(self.haptick.list_ports())
         self.ui.serialConnectButton.clicked.connect(self._connect)
 
         self.ui.filterCutoffSlider.valueChanged.connect(self._change_filter_cutoff)
+        self._change_filter_cutoff(self.ui.filterCutoffSlider.value())
+
+        self.ui.biasGroupBox.clicked.connect(self._change_bias_correction)
+        self.ui.biasThresholdSlider.valueChanged.connect(self._change_bias_correction)
+        self.ui.biasTimeSlider.valueChanged.connect(self._change_bias_correction)
+        self._change_bias_correction()
 
         self.timer = QTimer(self)
         self.timer.setInterval(20)
@@ -48,7 +54,7 @@ class MainWindow(QMainWindow):
             self.ui.voltagePlot.add_values(vals)
             self.ui.psdPlot.add_values(vals)
             self.ui.noiseWidget.add_values(vals)
-            self.ui.forceTorqueDisplay.add_values(vals)
+            self.ui.cubeControl.add_values(vals)
     
     def _change_filter_cutoff(self, value):
         if value == 99:
@@ -58,6 +64,14 @@ class MainWindow(QMainWindow):
             frequency = 10 ** (value * 4.29 / 98 - 1)
             self.haptick.filter_cutoff = frequency
             self.ui.filterCutoffValue.setText(f"{frequency:.1f} Hz")
+    
+    def _change_bias_correction(self, *_):
+        time = self.ui.biasTimeSlider.value() / 99.0 * 3.0 + 1.0
+        threshold = self.ui.biasThresholdSlider.value() / 99.0 * 2.0e-6
+        enabled = self.ui.biasGroupBox.isChecked()
+
+        settings = interface.BiasCorrectionSettings(enabled, threshold, time)
+        self.haptick.bias_correction = settings
 
 
 if __name__ == "__main__":
