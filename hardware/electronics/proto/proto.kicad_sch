@@ -4,6 +4,12 @@
 
   (paper "A4")
 
+  (title_block
+    (title "Haptick Prototype Base")
+    (date "2023-01-13")
+    (rev "1.1.0")
+  )
+
   (lib_symbols
     (symbol "Connector:Conn_01x08_Female" (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
       (property "Reference" "J" (id 0) (at 0 10.16 0)
