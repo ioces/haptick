@@ -5,6 +5,12 @@
   )
 
   (paper "A4")
+  (title_block
+    (title "Haptick Proto Base")
+    (date "2023-01-13")
+    (rev "1.1.0")
+  )
+
   (layers
     (0 "F.Cu" signal)
     (31 "B.Cu" signal)
