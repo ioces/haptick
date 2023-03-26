@@ -1,4 +1,4 @@
-Copyright © 2022 Ioces Pty Ltd
+Copyright © 2022-2023 Ioces Pty Ltd
 
 This project is combined work licensed under multiple separate licenses, outlined below:
 * The hardware design and documentation for this project is licensed under the [CERN Open Hardware Licence Version 2 - Strongly Reciprocal](https://ohwr.org/cern_ohl_s_v2.txt) (CERN-OHL-S-2.0). This includes all content under the `/hardware` and `/documentation` folders.

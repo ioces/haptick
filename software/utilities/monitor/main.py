@@ -40,7 +40,7 @@ class MainWindow(QMainWindow):
         self.timer.start()
         self.ui.serialPortCombo.setDisabled(True)
         self.ui.serialConnectButton.setText("Disconnect")
-        self.ui.serialConnectButton.setIcon(QIcon("assets/plug-connected-x.svg"))
+        self.ui.serialConnectButton.setIcon(QIcon("assets/tabler-icons/plug-connected-x.svg"))
         self.ui.serialConnectButton.clicked.disconnect(self._connect)
         self.ui.serialConnectButton.clicked.connect(self._disconnect)
     
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.haptick.disconnect()
         self.ui.serialPortCombo.setDisabled(False)
         self.ui.serialConnectButton.setText("Connect")
-        self.ui.serialConnectButton.setIcon(QIcon("assets/plug-connected.svg"))
+        self.ui.serialConnectButton.setIcon(QIcon("assets/tabler-icons/plug-connected.svg"))
         self.ui.serialConnectButton.clicked.disconnect(self._disconnect)
         self.ui.serialConnectButton.clicked.connect(self._connect)
     

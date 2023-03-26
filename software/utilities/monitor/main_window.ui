@@ -30,7 +30,7 @@
         </property>
         <property name="icon">
          <iconset>
-          <normaloff>assets/plug-connected.svg</normaloff>assets/plug-connected.svg</iconset>
+          <normaloff>assets/tabler-icons/plug-connected.svg</normaloff>assets/tabler-icons/plug-connected.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -157,7 +157,7 @@
         </property>
         <property name="icon">
          <iconset>
-          <normaloff>assets/player-record.svg</normaloff>assets/player-record.svg</iconset>
+          <normaloff>assets/tabler-icons/player-record.svg</normaloff>assets/tabler-icons/player-record.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
