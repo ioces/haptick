@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         self.poll_timer.timeout.connect(self._poll)
 
         self.update_timer = QTimer(self)
-        self.update_timer.setInterval(50)
+        self.update_timer.setInterval(20)
         self.update_timer.timeout.connect(self._update)
         self.update_timer.start()
     
