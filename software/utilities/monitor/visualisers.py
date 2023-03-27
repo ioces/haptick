@@ -203,7 +203,8 @@ class CubeDisplay(QOpenGLWidget):
             ],
         )
 
-        with Image.open('assets/' + self.scene.materials['Material'].texture.image_name) as im:
+        texture_path = Path(__file__).parent / 'assets' / self.scene.materials['Material'].texture.image_name
+        with Image.open(texture_path) as im:
             im = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
             self.texture = self.ctx.texture(im.size, 4, im.tobytes())
 
