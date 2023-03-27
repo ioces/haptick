@@ -29,8 +29,8 @@
          <string>Connect</string>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>assets/tabler-icons/plug-connected.svg</normaloff>assets/tabler-icons/plug-connected.svg</iconset>
+         <iconset resource="resources.qrc">
+          <normaloff>:/icons/connect</normaloff>:/icons/connect</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -156,8 +156,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>assets/tabler-icons/player-record.svg</normaloff>assets/tabler-icons/player-record.svg</iconset>
+         <iconset resource="resources.qrc">
+          <normaloff>:/icons/record</normaloff>:/icons/record</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -259,6 +259,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

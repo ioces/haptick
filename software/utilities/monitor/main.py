@@ -3,6 +3,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog
 from ui_mainwindow import Ui_MainWindow
+import time
 import interface
 
 
@@ -26,35 +27,55 @@ class MainWindow(QMainWindow):
         self.ui.biasTimeSlider.valueChanged.connect(self._change_bias_correction)
         self._change_bias_correction()
 
-        self.timer = QTimer(self)
-        self.timer.setInterval(20)
-        self.timer.timeout.connect(self._update)
+        self._haptick_readings = []
+        self.poll_timer = QTimer(self)
+        self.poll_timer.setInterval(20)
+        self.poll_timer.timeout.connect(self._poll)
+
+        self.update_timer = QTimer(self)
+        self.update_timer.setInterval(50)
+        self.update_timer.timeout.connect(self._update)
+        self.update_timer.start()
     
     def closeEvent(self, event):
         super().closeEvent(event)
-        self.timer.stop()
+        self.poll_timer.stop()
         self.haptick.disconnect()
 
     def _connect(self):
         self.haptick.connect(self.ui.serialPortCombo.currentText())
-        self.timer.start()
+        self.poll_timer.start()
         self.ui.serialPortCombo.setDisabled(True)
         self.ui.serialConnectButton.setText("Disconnect")
-        self.ui.serialConnectButton.setIcon(QIcon("assets/tabler-icons/plug-connected-x.svg"))
+        self.ui.serialConnectButton.setIcon(QIcon(":/icons/disconnect"))
         self.ui.serialConnectButton.clicked.disconnect(self._connect)
         self.ui.serialConnectButton.clicked.connect(self._disconnect)
     
     def _disconnect(self):
-        self.timer.stop()
+        self.poll_timer.stop()
         self.haptick.disconnect()
         self.ui.serialPortCombo.setDisabled(False)
         self.ui.serialConnectButton.setText("Connect")
-        self.ui.serialConnectButton.setIcon(QIcon("assets/tabler-icons/plug-connected.svg"))
+        self.ui.serialConnectButton.setIcon(QIcon(":/icons/connect"))
         self.ui.serialConnectButton.clicked.disconnect(self._disconnect)
         self.ui.serialConnectButton.clicked.connect(self._connect)
     
     def _start_record(self):
+        # Temporarily stop the update timer while we get a filename and start
+        # recording. There are two reasons for this:
+        #
+        # 1. With the 20ms timer, some bug in Qt means the save file dialog
+        #    doesn't display, as the event loop spends all its time serving the
+        #    timer.
+        # 2. We want to start saving data from when the record button is hit. If
+        #    we stop the timer, the interprocess queue will start to buffer all
+        #    samples from when the timer is stopped, which means they'll all get
+        #    written to disk when the timer starts again.
+        self.update_timer.stop()
+
+        # Get a filename and update the button state.
         file_name, _ = QFileDialog.getSaveFileName(self, "Record File", "", "Comma Separated Values (*.csv)")
+
         if file_name:
             self.ui.recordButton.toggled.disconnect(self._start_record)
             self.ui.recordButton.toggled.connect(self._stop_record)
@@ -64,17 +85,32 @@ class MainWindow(QMainWindow):
             self.ui.recordButton.blockSignals(True)
             self.ui.recordButton.setChecked(False)
             self.ui.recordButton.blockSignals(False)
+        
+        # Start the timer again.
+        self.update_timer.start()
     
     def _stop_record(self):
         self.ui.recordButton.toggled.connect(self._start_record)
+        self.ui.recordButton.setIcon(QIcon(":/icons/record"))
     
-    def _update(self):
+    def _poll(self):
         vals = self.haptick.get_vals()
         if vals is not None:
-            self.ui.voltagePlot.add_values(vals)
-            self.ui.psdPlot.add_values(vals)
-            self.ui.noiseWidget.add_values(vals)
-            self.ui.cubeControl.add_values(vals)
+            self._haptick_readings.extend(vals)
+    
+    def _update(self):
+        if self._haptick_readings:
+            self.ui.voltagePlot.add_values(self._haptick_readings)
+            self.ui.psdPlot.add_values(self._haptick_readings)
+            self.ui.noiseWidget.add_values(self._haptick_readings)
+            self.ui.cubeControl.add_values(self._haptick_readings)
+            self._haptick_readings = []
+        
+        if self.ui.recordButton.isChecked():
+            if time.monotonic() % 1 > 0.5:
+                self.ui.recordButton.setIcon(QIcon())
+            else:
+                self.ui.recordButton.setIcon(QIcon(":/icons/record"))
     
     def _change_filter_cutoff(self, value):
         if value == 99:
