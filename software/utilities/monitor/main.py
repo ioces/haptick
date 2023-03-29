@@ -27,24 +27,18 @@ class MainWindow(QMainWindow):
         self.ui.biasTimeSlider.valueChanged.connect(self._change_bias_correction)
         self._change_bias_correction()
 
-        self._haptick_readings = []
-        self.poll_timer = QTimer(self)
-        self.poll_timer.setInterval(20)
-        self.poll_timer.timeout.connect(self._poll)
-
         self.update_timer = QTimer(self)
         self.update_timer.setInterval(20)
         self.update_timer.timeout.connect(self._update)
-        self.update_timer.start()
     
     def closeEvent(self, event):
         super().closeEvent(event)
-        self.poll_timer.stop()
+        self.update_timer.stop()
         self.haptick.disconnect()
 
     def _connect(self):
         self.haptick.connect(self.ui.serialPortCombo.currentText())
-        self.poll_timer.start()
+        self.update_timer.start()
         self.ui.serialPortCombo.setDisabled(True)
         self.ui.serialConnectButton.setText("Disconnect")
         self.ui.serialConnectButton.setIcon(QIcon(":/icons/disconnect"))
@@ -52,7 +46,7 @@ class MainWindow(QMainWindow):
         self.ui.serialConnectButton.clicked.connect(self._disconnect)
     
     def _disconnect(self):
-        self.poll_timer.stop()
+        self.update_timer.stop()
         self.haptick.disconnect()
         self.ui.serialPortCombo.setDisabled(False)
         self.ui.serialConnectButton.setText("Connect")
@@ -93,18 +87,14 @@ class MainWindow(QMainWindow):
         self.ui.recordButton.toggled.connect(self._start_record)
         self.ui.recordButton.setIcon(QIcon(":/icons/record"))
     
-    def _poll(self):
-        vals = self.haptick.get_vals()
-        if vals is not None:
-            self._haptick_readings.extend(vals)
-    
     def _update(self):
-        if self._haptick_readings:
-            self.ui.voltagePlot.add_values(self._haptick_readings)
-            self.ui.psdPlot.add_values(self._haptick_readings)
-            self.ui.noiseWidget.add_values(self._haptick_readings)
-            self.ui.cubeControl.add_values(self._haptick_readings)
-            self._haptick_readings = []
+        vals = self.haptick.get_vals()
+
+        if vals is not None:
+            self.ui.voltagePlot.add_values(vals)
+            self.ui.psdPlot.add_values(vals)
+            self.ui.noiseWidget.add_values(vals)
+            self.ui.cubeControl.add_values(vals)
         
         if self.ui.recordButton.isChecked():
             if time.monotonic() % 1 > 0.5:
