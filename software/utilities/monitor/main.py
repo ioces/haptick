@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
         
         if self.ui.recordButton.isChecked():
             if time.monotonic() % 1 > 0.5:
-                self.ui.recordButton.setIcon(QIcon())
+                self.ui.recordButton.setIcon(QIcon(":/icons/blank"))
             else:
                 self.ui.recordButton.setIcon(QIcon(":/icons/record"))
     

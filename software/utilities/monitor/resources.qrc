@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file alias="blank">assets/blank-icon.svg</file>
     <file alias="disconnect">assets/tabler-icons/plug-connected-x.svg</file>
     <file alias="connect">assets/tabler-icons/plug-connected.svg</file>
     <file alias="record">assets/tabler-icons/player-record.svg</file>
