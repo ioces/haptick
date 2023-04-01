@@ -80,7 +80,7 @@ class SerialProcess:
             result = np.vstack(samples)
         
         self._cache = np.roll(self._cache, result.shape[0], axis=0)
-        self._cache[:result.shape[0], ...] = result
+        self._cache[:result.shape[0], ...] = result[::-1, ...]
 
         self._counter += result.shape[0]
 
