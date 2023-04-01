@@ -47,7 +47,7 @@ class SerialProcess:
                 data = s.read(24)
                 if parsed := self.__parse(data):
                     samples_to_filter.append(parsed)
-                    if len(samples_to_filter) == 32:
+                    if len(samples_to_filter) == 64:
                         samples_to_send.append(self.__filter(samples_to_filter))
                         samples_to_filter = []
                 else:
