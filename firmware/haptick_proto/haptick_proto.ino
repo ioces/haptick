@@ -39,6 +39,9 @@ void setup()
   analogWriteFrequency(adc_clk_pin, 8000000);
   analogWrite(adc_clk_pin, 128);
 
+  // Delay for a bit to make sure the ADC is alive
+  delay(100);
+
   // Start SPI and pull !CS high
   SPI.begin();
   pinMode(spi_ncs_pin, OUTPUT);
