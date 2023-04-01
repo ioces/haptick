@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog
 from ui_mainwindow import Ui_MainWindow
 import time
 import interface
+import numpy as np
 
 
 class MainWindow(QMainWindow):
@@ -30,9 +31,13 @@ class MainWindow(QMainWindow):
         self.update_timer = QTimer(self)
         self.update_timer.setInterval(20)
         self.update_timer.timeout.connect(self._update)
+
+        self.__file = None
     
     def closeEvent(self, event):
         super().closeEvent(event)
+        if self.__file:
+            self._stop_record()
         self.update_timer.stop()
         self.haptick.disconnect()
 
@@ -65,12 +70,14 @@ class MainWindow(QMainWindow):
         #    we stop the timer, the interprocess queue will start to buffer all
         #    samples from when the timer is stopped, which means they'll all get
         #    written to disk when the timer starts again.
+        timer_active = self.update_timer.isActive()
         self.update_timer.stop()
 
         # Get a filename and update the button state.
         file_name, _ = QFileDialog.getSaveFileName(self, "Record File", "", "Comma Separated Values (*.csv)")
 
         if file_name:
+            self.__file = open(file_name, 'w')
             self.ui.recordButton.toggled.disconnect(self._start_record)
             self.ui.recordButton.toggled.connect(self._stop_record)
         else:
@@ -81,9 +88,12 @@ class MainWindow(QMainWindow):
             self.ui.recordButton.blockSignals(False)
         
         # Start the timer again.
-        self.update_timer.start()
+        if timer_active:
+            self.update_timer.start()
     
     def _stop_record(self):
+        self.__file.close()
+        self.__file = None
         self.ui.recordButton.toggled.connect(self._start_record)
         self.ui.recordButton.setIcon(QIcon(":/icons/record"))
     
@@ -95,6 +105,9 @@ class MainWindow(QMainWindow):
             self.ui.psdPlot.add_values(vals)
             self.ui.noiseWidget.add_values(vals)
             self.ui.cubeControl.add_values(vals)
+            
+            if self.__file:
+                np.savetxt(self.__file, vals, fmt="%.3e", delimiter=",")
         
         if self.ui.recordButton.isChecked():
             if time.monotonic() % 1 > 0.5:
