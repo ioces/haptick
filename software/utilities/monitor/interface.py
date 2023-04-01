@@ -1,6 +1,7 @@
 import serial
 import serial.tools.list_ports
 from multiprocessing import Process, Pipe
+from select import select
 import numpy as np
 import scipy.signal as ss
 from dataclasses import dataclass
@@ -29,8 +30,10 @@ class SerialProcess:
     def __call__(self, conn):
         with serial.Serial(self.port, timeout=0.1) as s:
             self.__sync(s)
-            samples = []
+            samples_to_filter = []
+            samples_to_send = []
             while True:
+                # Handle incoming messages
                 if conn.poll():
                     message = conn.recv()
                     if message["command"] == "close":
@@ -39,15 +42,25 @@ class SerialProcess:
                         self.filter_cutoff = message["value"]
                     elif message["command"] == "set_bias_correction":
                         self.bias_correction = message["value"]
+                
+                # Read, parse and (sometimes) filter data
                 data = s.read(24)
                 if parsed := self.__parse(data):
-                    samples.append(parsed)
-                    if len(samples) == 32:
-                        result = self.__filter(samples)
-                        conn.send(result)
-                        samples = []
+                    samples_to_filter.append(parsed)
+                    if len(samples_to_filter) == 64:
+                        samples_to_send.append(self.__filter(samples_to_filter))
+                        samples_to_filter = []
                 else:
                     self.__sync(s)
+                
+                # Send data
+                if samples_to_send and not self.__pipe_full(conn):
+                    conn.send(np.vstack(samples_to_send))
+                    samples_to_send = []
+    
+    def __pipe_full(self, conn):
+        _, w, _ = select([], [conn], [], 0.0)
+        return len(w) == 0
     
     def __sync(self, s):
         s.read_until(b'\x05\x3f')
@@ -67,7 +80,7 @@ class SerialProcess:
             result = np.vstack(samples)
         
         self._cache = np.roll(self._cache, result.shape[0], axis=0)
-        self._cache[:result.shape[0], ...] = result
+        self._cache[:result.shape[0], ...] = result[::-1, ...]
 
         self._counter += result.shape[0]
 

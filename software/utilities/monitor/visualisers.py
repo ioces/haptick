@@ -52,11 +52,11 @@ class ChannelVoltage(MplCanvas):
     
     def add_values(self, values):
         value_count = len(values)
+        prev_x = self.x_data[-1]
         self.y_data = np.roll(self.y_data, -value_count, axis=0)
         self.x_data = np.roll(self.x_data, -value_count, axis=0)
-        self.y_data[-value_count:, :] = values
-        prev_x = self.x_data[-value_count-1]
-        self.x_data[-value_count:] = np.linspace(prev_x + 256e-6, prev_x + 256e-6 + (value_count - 1) * 256e-6, value_count)
+        self.y_data[-value_count:, :] = values[-self.y_data.shape[0]:]
+        self.x_data[-value_count:] = np.linspace(prev_x + 256e-6, prev_x + 256e-6 + (value_count - 1) * 256e-6, value_count)[-self.x_data.shape[0]:]
         if self.isVisible():
             for line, d in zip(self.lines, self.y_data.T):
                 line.set_ydata(d)
@@ -81,7 +81,7 @@ class ChannelPsd(MplCanvas):
     def add_values(self, values):
         value_count = len(values)
         self.data = np.roll(self.data, -value_count, axis=0)
-        self.data[-value_count:, :] = values
+        self.data[-value_count:, :] = values[-self.data.shape[0]:]
         if self.isVisible():
             self.axes.clear()
             self.axes.set_ylim(-300.0, -100.0)
@@ -109,7 +109,7 @@ class NoiseWidget(QWidget):
     def add_values(self, values):
         value_count = len(values)
         self.data = np.roll(self.data, -value_count, axis=0)
-        self.data[-value_count:, :] = values
+        self.data[-value_count:, :] = values[-self.data.shape[0]:]
         if self.isVisible():
             rms = np.std(self.data, axis=0)
             for label, value in zip(self._channel_labels, rms):
@@ -203,7 +203,8 @@ class CubeDisplay(QOpenGLWidget):
             ],
         )
 
-        with Image.open('assets/' + self.scene.materials['Material'].texture.image_name) as im:
+        texture_path = Path(__file__).parent / 'assets' / self.scene.materials['Material'].texture.image_name
+        with Image.open(texture_path) as im:
             im = im.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
             self.texture = self.ctx.texture(im.size, 4, im.tobytes())
 
@@ -267,7 +268,7 @@ class CubeControl(QWidget):
         # Get the most recent arm forces. Base arm index 0 and 1 should be
         # immediately either side of the positive x-axis, and indices should
         # increase with increasing geometric angle.
-        arm_forces = np.roll(-values[-1, ...], 1)
+        arm_forces = np.roll(-values[-1], 1)
 
         # Bail if the values we get aren't large enough.
         if np.all(np.abs(arm_forces) < self._threshold):
@@ -283,7 +284,7 @@ class CubeControl(QWidget):
         # We know Haptick uses a constant sampling rate, so the elapsed time
         # since the last batch of samples is the sampling period times the
         # number of samples.
-        time = values.shape[0] * 256e-6
+        time = len(values) * 256e-6
 
         # Calculate the translation and rotation from the applied forces and
         # torques. We make linear velocity directly proportional to the force

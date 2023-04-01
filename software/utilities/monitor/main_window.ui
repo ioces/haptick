@@ -16,8 +16,31 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="1,0,2,2">
-      <item row="0" column="3" rowspan="2">
+     <layout class="QGridLayout" name="gridLayout" columnstretch="2,1,0,4,5">
+      <item row="1" column="0">
+       <widget class="QPushButton" name="serialConnectButton">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Connect</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources.qrc">
+          <normaloff>:/icons/connect</normaloff>:/icons/connect</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4" rowspan="2">
        <widget class="QGroupBox" name="groupBox_2">
         <property name="title">
          <string>Low Pass Filter</string>
@@ -59,10 +82,7 @@
         </layout>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QComboBox" name="serialPortCombo"/>
-      </item>
-      <item row="0" column="1" rowspan="2">
+      <item row="0" column="2" rowspan="2">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -75,20 +95,7 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="serialConnectButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Connect</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" rowspan="2">
+      <item row="0" column="3" rowspan="2">
        <widget class="QGroupBox" name="biasGroupBox">
         <property name="title">
          <string>Bias Correction</string>
@@ -130,6 +137,41 @@
          </item>
         </layout>
        </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="recordButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="resources.qrc">
+          <normaloff>:/icons/record</normaloff>:/icons/record</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QComboBox" name="serialPortCombo"/>
       </item>
      </layout>
     </item>
@@ -217,6 +259,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

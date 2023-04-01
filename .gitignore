@@ -2,6 +2,7 @@
 .venv/
 __pycache__/
 ui_*.py
+*_rc.py
 
 # KiCad extras
 *.000
