@@ -94,6 +94,7 @@ class MainWindow(QMainWindow):
     def _stop_record(self):
         self.__file.close()
         self.__file = None
+        self.ui.recordButton.toggled.disconnect(self._stop_record)
         self.ui.recordButton.toggled.connect(self._start_record)
         self.ui.recordButton.setIcon(QIcon(":/icons/record"))
     
